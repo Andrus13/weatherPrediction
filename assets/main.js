@@ -37,7 +37,7 @@ function checkCity(event) {
         autocompleteService.getPlacePredictions(request, function(predictions, status) {
             let city = inputField.value.includes(",") ? inputField.value.split(',')[0] : inputField.value;
             status === google.maps.places.PlacesServiceStatus.OK && predictions.length > 0
-                ? (allertText.classList.add('hidden'), (currentBlock === inputBtn) ? getWearher(city) : addRecordToLocalStorage())
+                ? (allertText.classList.add('hidden'), (currentBlock === inputBtn) ? getWeather(city) : addRecordToLocalStorage())
                 : allertText.classList.remove('hidden');
         });
     } else {
@@ -47,15 +47,21 @@ function checkCity(event) {
 
 // geting IP
 function getIp() {
-    fetch('https://ip-api.com/json/')
-        .then(response => response.json())
-        .then(data => {
-            currentCity = data.city;
-            countryCode = data.countryCode;
-            
-            getWearher(data.city);
-        })
-        .catch(error => console.error('Что-то пошло не так:', error));
+    fetch('https://api.ipstack.com/check?access_key=0a6d12ea299d314518d202d0dd31d697')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      
+      console.log('Current City:', data.city);
+      console.log('Country Code:', data.country_code);
+      
+      getWeather(data.city);
+    })
+    .catch(error => console.error('Что-то пошло не так:', error));
 }
 
 // period togglers
@@ -90,7 +96,7 @@ function openCards(element) {
 
 
 // query
-function getWearher(city) {
+function getWeather(city) {
     fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=e795752a371583744e0d50427dac0443&units=metric`)
         .then(response => response.json())
         .then(data => {
