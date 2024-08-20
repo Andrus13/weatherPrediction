@@ -27,7 +27,7 @@ const allertText = document.getElementById('allertText');
 function checkCity(event) {
     const currentBlock = event.currentTarget;
     
-    if (inputField.value.length > 0) {
+    if (inputField.value.length >= 4) {
         const autocompleteService = new google.maps.places.AutocompleteService();
         const request = {
             input: inputField.value,
@@ -35,9 +35,9 @@ function checkCity(event) {
         };
 
         autocompleteService.getPlacePredictions(request, function(predictions, status) {
-            let city = inputField.value.includes(",") ? inputField.value.split(',')[0] : inputField.value;
+            let city;
             status === google.maps.places.PlacesServiceStatus.OK && predictions.length > 0
-                ? (allertText.classList.add('hidden'), (currentBlock === inputBtn) ? getWeather(city) : addRecordToLocalStorage())
+                ? (city = inputField.value.includes(",") ? inputField.value.split(',')[0] : inputField.value,allertText.classList.add('hidden'), (currentBlock === inputBtn) ? getWeather(city) : addRecordToLocalStorage())
                 : allertText.classList.remove('hidden');
         });
     } else {
@@ -61,7 +61,7 @@ function getIp() {
       
       getWeather(data.city);
     })
-    .catch(error => console.error('Что-то пошло не так:', error));
+    .catch(error => console.error('Something went wrong:', error));
 }
 
 // period togglers
@@ -190,7 +190,7 @@ function getWeather(city) {
             inputField.value = '';
             inputField.focus();
         })
-        .catch(error => console.error('Ошибка:', error));
+        .catch(error => console.error('Error:', error));
 }
 
 // weather cards
@@ -218,16 +218,16 @@ class CardConstructor {
                                 <span class="card-body-text"><span class="card-data">${periodName}</span></span>
                             </div>
                             <div class="card-section">
-                                <span class="card-body-text">Погода: <span class="card-data">${data.description}</span></span>
+                                <span class="card-body-text">Weather: <span class="card-data">${data.description}</span></span>
                             </div>
                             <div class="card-section">
-                                <span class="card-body-text">Тепература: <span class="card-data">${data.temp.toFixed(1)}°C</span></span></span>
+                                <span class="card-body-text">Temperature: <span class="card-data">${data.temp.toFixed(1)}°C</span></span></span>
                             </div>
                             <div class="card-section">
-                                <span class="card-body-text">Вологість: <span class="card-data">${data.humidity.toFixed(1)}%</span></span>
+                                <span class="card-body-text">Humidity: <span class="card-data">${data.humidity.toFixed(1)}%</span></span>
                             </div>
                             <div class="card-section">
-                                <span class="card-body-text">Швидкість вітру: <span class="card-data">${data.windSpeed.toFixed(1)} м/с</span>
+                                <span class="card-body-text">Wind speed: <span class="card-data">${data.windSpeed.toFixed(1)} m/s</span>
                             </div>
         `;
 
@@ -399,6 +399,7 @@ function createWeatherBlock() {
         trash = e.closest('.weather-block');
     }));
 
+    getIp();
 }
 
 
@@ -408,12 +409,12 @@ function addRecordToLocalStorage() {
 
     const storedCities = Object.values(localStorage).map(item => JSON.parse(item).city.toLowerCase());
     if (storedCities.includes(city.toLowerCase())) {
-        showNotification('Такой город уже существует!');
+        showNotification('Such a city already exists!');
         return
     } 
 
     if (records.length >= 5) {
-        showNotification('Переполнено. Нельзя добавить больше 5 записей.');
+        showNotification("Crowded! Can't add more than 5 entries.");
         return;
     }
 
