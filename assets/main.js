@@ -47,15 +47,21 @@ function checkCity(event) {
 
 // geting IP
 function getIp() {
-    fetch('http://ip-api.com/json/')
-        .then(response => response.json())
-        .then(data => {
-            currentCity = data.city;
-            countryCode = data.countryCode;
-            
-            getWearher(data.city);
-        })
-        .catch(error => console.error('Что-то пошло не так:', error));
+    fetch('https://api.ipstack.com/check?access_key=0a6d12ea299d314518d202d0dd31d697')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      
+      console.log('Current City:', data.city);
+      console.log('Country Code:', data.country_code);
+      
+      getWeather(data.city);
+    })
+    .catch(error => console.error('Что-то пошло не так:', error));
 }
 
 // period togglers
