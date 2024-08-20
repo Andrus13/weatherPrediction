@@ -1,14 +1,25 @@
-// input focus
+// input
 const inputField = document.querySelector('.inputWrapper input'),
-      inputWrapper = document.querySelector('.inputWrapper');
+    inputWrapper = document.querySelector('.inputWrapper');
 
 inputField.addEventListener('focus', () => {
     inputWrapper.classList.add('focused');
+    highlightText();
 });
 
 inputField.addEventListener('blur', () => {
     inputField.value.length > 0 ? false : inputWrapper.classList.remove('focused');
 });
+
+function highlightText() {
+    if (document.activeElement === inputField && inputField.value.length > 0) inputField.select();
+}
+
+function removeApostrophes() {
+    const inputValue = inputField.value;
+    const cleanedValue = inputValue.replace(/'/g, '');
+    inputField.value = cleanedValue;
+}
 
 // Autocomplete initializatio
 function initialize() {
@@ -16,7 +27,7 @@ function initialize() {
         types: ['(cities)'],
         componentRestrictions: { country: "ua" }
     };
-    
+
     new google.maps.places.Autocomplete(inputField, options);
 }
 
@@ -26,7 +37,9 @@ const allertText = document.getElementById('allertText');
 
 function checkCity(event) {
     const currentBlock = event.currentTarget;
-    
+
+    removeApostrophes()
+
     if (inputField.value.length >= 4) {
         const autocompleteService = new google.maps.places.AutocompleteService();
         const request = {
@@ -34,10 +47,10 @@ function checkCity(event) {
             types: ['(cities)']
         };
 
-        autocompleteService.getPlacePredictions(request, function(predictions, status) {
+        autocompleteService.getPlacePredictions(request, function (predictions, status) {
             let city;
             status === google.maps.places.PlacesServiceStatus.OK && predictions.length > 0
-                ? (city = inputField.value.includes(",") ? inputField.value.split(',')[0] : inputField.value,allertText.classList.add('hidden'), (currentBlock === inputBtn) ? getWeather(city) : addRecordToLocalStorage())
+                ? (city = inputField.value.includes(",") ? inputField.value.split(',')[0] : inputField.value, allertText.classList.add('hidden'), (currentBlock === inputBtn) ? getWeather(city) : addRecordToLocalStorage())
                 : allertText.classList.remove('hidden');
         });
     } else {
@@ -46,22 +59,26 @@ function checkCity(event) {
 }
 
 // geting IP
-function getIp() {
-    fetch('https://api.ipstack.com/check?access_key=0a6d12ea299d314518d202d0dd31d697')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      
-      console.log('Current City:', data.city);
-      console.log('Country Code:', data.country_code);
-      
-      getWeather(data.city);
-    })
-    .catch(error => console.error('Something went wrong:', error));
+async function getIp() {
+    try {
+        await fetch('https://api.ipstack.com/check?access_key=e6e21fa064f7f99b9d12e6c387874545')
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok')
+                return response.json();
+            })
+            .then(data => {
+
+                console.log('Current City:', data.city);
+                console.log('Country Code:', data.country_code);
+
+                getWeather(data.city);
+            })
+    } catch (error) {
+        console.error('Fetch error:', error);
+    } finally {
+        hidePreloader();
+    }
+    // .catch(error => console.error('Something went wrong:', error));
 }
 
 // period togglers
@@ -71,7 +88,7 @@ function hideCards(element) {
     container.querySelectorAll('.card-container .card').forEach((item, index) => {
         if (index > 0) item.classList.add("hidden");
     });
-    
+
     container.querySelectorAll('canvas').forEach((item, index) => {
         index > 0 ? item.classList.add("hidden") : item.classList.remove("hidden");
     });
@@ -96,101 +113,113 @@ function openCards(element) {
 
 
 // query
-function getWeather(city) {
-    fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=e795752a371583744e0d50427dac0443&units=metric`)
-        .then(response => response.json())
-        .then(data => {
-            
-            console.log(data.cod);   
-            const idBlock = document.querySelectorAll('.weather-block').length;
-            const cityName = document.querySelector(`.weather-block${idBlock} .period`);
-            const cityBlock = document.querySelector(`.weather-block${idBlock} .block-row`);
-            cityBlock.innerHTML = '<div class="nav-trash hidden"></div>';
-            
-            if (data.cod !== '404') {
-                cityBlock.innerHTML = `<div class="nav-city">${city}</div><div class="nav-trash hidden"></div>`;
-                cityName.insertAdjacentElement('afterend', cityBlock);
-            }            
-                
-            const container = document.querySelector(`.card-container${idBlock}`);
-            container.innerHTML = '';
-            const days = {};
+//ea97131c7a7e404a2f5b2dc06e664bc7 extra appiKey
 
-            data.list.forEach(forecast => {
-                const dateObj = new Date(forecast.dt * 1000);
-                const date = dateObj.toLocaleDateString();
-                const weekday = dateObj.toLocaleDateString('en-EN', { weekday: 'long' });
-                const hours = dateObj.getHours();
+async function getWeather(city) {
+    showPreloader();
 
-                if (!days[date]) {
-                    days[date] = { weekday, morning: [], day: [], evening: [] };
+    try {
+        await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=e795752a371583744e0d50427dac0443&units=metric`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                console.log(data.cod);
+                const idBlock = document.querySelectorAll('.weather-block').length;
+                const cityName = document.querySelector(`.weather-block${idBlock} .period`);
+                const cityBlock = document.querySelector(`.weather-block${idBlock} .block-row`);
+                cityBlock.innerHTML = '<div class="nav-trash hidden"></div>';
+
+                if (data.cod !== '404') {
+                    cityBlock.innerHTML = `<div class="nav-city">${city}</div><div class="nav-trash hidden"></div>`;
+                    cityName.insertAdjacentElement('afterend', cityBlock);
                 }
 
-                if (hours < 9) {
-                    days[date].morning.push(forecast);
-                } else if (hours >= 9 && hours <= 18) {
-                    days[date].day.push(forecast);
-                } else {
-                    days[date].evening.push(forecast);
-                }
-            });
+                const container = document.querySelector(`.card-container${idBlock}`);
+                container.innerHTML = '';
+                const days = {};
 
-            const calculateAverages = (forecasts) => {
-                const total = forecasts.length;
-                const averages = {
-                    temp: 0,
-                    humidity: 0,
-                    windSpeed: 0,
-                    description: ''
-                };
+                data.list.forEach(forecast => {
+                    const dateObj = new Date(forecast.dt * 1000);
+                    const date = dateObj.toLocaleDateString();
+                    const weekday = dateObj.toLocaleDateString('en-EN', { weekday: 'long' });
+                    const hours = dateObj.getHours();
 
-                forecasts.forEach((forecast, index) => {
-                    averages.temp += forecast.main.temp;
-                    averages.humidity += forecast.main.humidity;
-                    averages.windSpeed += forecast.wind.speed;
+                    if (!days[date]) {
+                        days[date] = { weekday, morning: [], day: [], evening: [] };
+                    }
 
-                    if (index === total - 1) {
-                        averages.description = forecast.weather[0].description;
+                    if (hours < 9) {
+                        days[date].morning.push(forecast);
+                    } else if (hours >= 9 && hours <= 18) {
+                        days[date].day.push(forecast);
+                    } else {
+                        days[date].evening.push(forecast);
                     }
                 });
 
-                return {
-                    temp: averages.temp / total,
-                    humidity: averages.humidity / total,
-                    windSpeed: averages.windSpeed / total,
-                    description: averages.description
+                const calculateAverages = (forecasts) => {
+                    const total = forecasts.length;
+                    const averages = {
+                        temp: 0,
+                        humidity: 0,
+                        windSpeed: 0,
+                        description: ''
+                    };
+
+                    forecasts.forEach((forecast, index) => {
+                        averages.temp += forecast.main.temp;
+                        averages.humidity += forecast.main.humidity;
+                        averages.windSpeed += forecast.wind.speed;
+
+                        if (index === total - 1) {
+                            averages.description = forecast.weather[0].description;
+                        }
+                    });
+
+                    return {
+                        temp: averages.temp / total,
+                        humidity: averages.humidity / total,
+                        windSpeed: averages.windSpeed / total,
+                        description: averages.description
+                    };
                 };
-            };
 
-            Object.keys(days).forEach((date, index) => {
-                const { weekday, morning, day, evening } = days[date];
-                const morningAvg = calculateAverages(morning);
-                const dayAvg = calculateAverages(day);
-                const eveningAvg = calculateAverages(evening);
-                const isVisible = index === 0;
+                Object.keys(days).forEach((date, index) => {
+                    const { weekday, morning, day, evening } = days[date];
+                    const morningAvg = calculateAverages(morning);
+                    const dayAvg = calculateAverages(day);
+                    const eveningAvg = calculateAverages(evening);
+                    const isVisible = index === 0;
 
-                const cardInstance = new CardConstructor(date, weekday, morningAvg, dayAvg, eveningAvg, isVisible);
-                container.appendChild(cardInstance.createCard());
-            });
-
-            const today = Object.keys(days)[0];
-            const todayForecasts = [...days[today].morning, ...days[today].day, ...days[today].evening];
-             
-            clearCharts(idBlock);
-            renderDailyWeatherChart(todayForecasts, idBlock);
-            renderWeeklyWeatherChart(days, idBlock);
-
-            document.querySelectorAll('.period li').forEach(e => {
-                e.addEventListener('click', () => {
-                    const isOneDayView = e.getAttribute("value") === "one";
-                    isOneDayView ? hideCards(e) : openCards(e);
+                    const cardInstance = new CardConstructor(date, weekday, morningAvg, dayAvg, eveningAvg, isVisible);
+                    container.appendChild(cardInstance.createCard());
                 });
-            });
 
-            inputField.value = '';
-            inputField.focus();
-        })
-        .catch(error => console.error('Error:', error));
+                const today = Object.keys(days)[0];
+                const todayForecasts = [...days[today].morning, ...days[today].day, ...days[today].evening];
+
+                clearCharts(idBlock);
+                renderDailyWeatherChart(todayForecasts, idBlock);
+                renderWeeklyWeatherChart(days, idBlock);
+
+                document.querySelectorAll('.period li').forEach(e => {
+                    e.addEventListener('click', () => {
+                        const isOneDayView = e.getAttribute("value") === "one";
+                        isOneDayView ? hideCards(e) : openCards(e);
+                    });
+                });
+
+                inputField.value = '';
+                inputField.focus();
+            })
+    } catch (error) {
+        console.error('Fetch error:', error);
+    } finally {
+        hidePreloader();
+    }
+    // .catch(error => console.error('Error:', error));
 }
 
 // weather cards
@@ -241,7 +270,7 @@ class CardConstructor {
         if (!this.isVisible) {
             card.classList.add('hidden');
         }
-        
+
         card.innerHTML += `<div class="card-title">Date: </br><span class="card-data">${this.weekday}, ${this.date}</span></div>`;
 
         const morningBlock = this.createBlock(this.morningAvg, 'Morning', 'morn');
@@ -260,7 +289,7 @@ class CardConstructor {
 // Charts render
 function renderDailyWeatherChart(data, id) {
     const ctx = document.getElementById(`dailyWeatherChart${id}`).getContext('2d');
-    
+
     if (ctx.chart) {
         ctx.chart.destroy();
     }
@@ -297,7 +326,7 @@ function renderDailyWeatherChart(data, id) {
 
 function renderWeeklyWeatherChart(days, id) {
     const ctx = document.getElementById(`weeklyWeatherChart${id}`).getContext('2d');
-    
+
     if (ctx.chart) {
         ctx.chart.destroy();
     }
@@ -346,10 +375,10 @@ function clearCharts(id) {
         dailyChartCanvas.chart.destroy();
         dailyChartCanvas.chart = null;
     }
-    
+
     if (weeklyChartCanvas.chart) {
         weeklyChartCanvas.chart.destroy();
-        weeklyChartCanvas.chart = null; 
+        weeklyChartCanvas.chart = null;
     }
 }
 
@@ -370,8 +399,8 @@ function createWeatherBlock() {
         <div class="simple-block">
             <div class="nav">
                 <ul class="period">
-                    <li class="active" value="one">День</li>
-                    <li value="five">Неділя</li>
+                    <li class="active" value="one">Day</li>
+                    <li value="five">Week</li>
                 </ul>
                 <div class="block-row"><div class="nav-trash hidden"></div></div>
             </div>
@@ -385,17 +414,17 @@ function createWeatherBlock() {
 
     blocks[0].insertAdjacentElement('beforebegin', newBlock);
 
-    const navTrash = document.querySelectorAll('.nav-trash');    
-    
+    const navTrash = document.querySelectorAll('.nav-trash');
+
     navTrash.forEach((e, index) => {
         if (index !== 0) {
             e.classList.remove('hidden');
         };
     });
 
-    navTrash.forEach( e => e.addEventListener('click', (event) => {
+    navTrash.forEach(e => e.addEventListener('click', (event) => {
         event.stopPropagation();
-        delAlert.classList.remove('hidden');  
+        delAlert.classList.remove('hidden');
         trash = e.closest('.weather-block');
     }));
 
@@ -411,7 +440,7 @@ function addRecordToLocalStorage() {
     if (storedCities.includes(city.toLowerCase())) {
         showNotification('Such a city already exists!');
         return
-    } 
+    }
 
     if (records.length >= 5) {
         showNotification("Crowded! Can't add more than 5 entries.");
@@ -454,21 +483,42 @@ function updateChipsBlock() {
     });
 
     const chips = document.querySelectorAll('.chips li');
-            chips.forEach( e => e.addEventListener('click', () => {
-                inputField.value = '';
-                inputField.value = e.textContent;
-                inputField.focus();
-            }));
+    chips.forEach(e => e.addEventListener('click', () => {
+        inputField.value = '';
+        inputField.value = e.textContent;
+        inputField.focus();
+    }));
 }
 
 function showNotification(message) {
     const notification = document.getElementById('notification');
     notification.textContent = message;
     notification.classList.add('show');
-    
+
     setTimeout(() => {
         notification.classList.remove('show');
     }, 3000);
+}
+
+let activeRequests = 0;
+
+function showPreloader() {
+    console.log('Show preloader');
+    if (activeRequests === 0) {
+        document.getElementById('preloader').classList.remove('hidden');
+    }
+    activeRequests++;
+}
+
+function hidePreloader() {
+    console.log('Hide preloader');
+    activeRequests--;
+    if (activeRequests === 0) {
+        setTimeout(() => {
+            document.getElementById('preloader').classList.add('hidden');
+        }, 5000);
+        // document.getElementById('preloader').classList.add('hidden');
+    }
 }
 
 inputBtn.addEventListener('click', checkCity);
@@ -486,20 +536,26 @@ const closeBtn = delAlert.querySelector('.closeBtn');
 const modal = delAlert.querySelector('.delAlert-block .block-column');
 let trash;
 
-delBtn.addEventListener('click', (e) =>  {
+delBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    trash.remove();
+
+    trash.classList.add('beforeRemove');
+
+    setTimeout(() => {
+        trash.remove();
+    }, 1000);
+
     delAlert.classList.add('hidden');
     successBlock.classList.remove('hidden');
-    
+
     setTimeout(() => {
         successBlock.classList.add('hidden');
-    }, 3000);
- });
+    }, 2000);
+});
 
-closeBtn.addEventListener('click', (e) => (e.stopPropagation(),delAlert.classList.add('hidden')));
+closeBtn.addEventListener('click', (e) => (e.stopPropagation(), delAlert.classList.add('hidden')));
 
-delAlert.addEventListener('click', (e) =>  {
+delAlert.addEventListener('click', (e) => {
     if (e.target == delAlert) delAlert.classList.add('hidden');
 });
 

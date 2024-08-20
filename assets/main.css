@@ -24,7 +24,8 @@ html {
     box-sizing: border-box;
 }
 
-h1,p {
+h1,
+p {
     margin: 0;
 }
 
@@ -92,8 +93,16 @@ section {
 }
 
 .nav .chips {
+    padding: 5px 10px;
     margin: 0 0 10px 0;
-    gap: 10px;
+    overflow-x: auto;
+    gap: 15px;
+}
+
+@media (max-width: 425px) {
+    .nav .chips {
+        max-width: 300px;
+    }
 }
 
 .nav .chips li {
@@ -106,7 +115,8 @@ section {
     color: #00000094;
     padding: 9px 12px;
     cursor: pointer;
-} 
+    white-space: nowrap;
+}
 
 .nav .chips .closeBtn {
     position: absolute;
@@ -114,13 +124,13 @@ section {
     right: 3px;
     width: 10px;
     height: 10px;
-} 
+}
 
 .nav .period {
     gap: 10px;
     padding: 0 10px;
     margin: 0;
-} 
+}
 
 .nav .period li {
     list-style: none;
@@ -191,9 +201,16 @@ section {
 .weather-block {
     border: 1px solid var(--color-grey);
     padding: 10px 10px 0 10px;
+    transition: transform 1.5s ease, opacity 0.7s ease;
 }
 
-.simple-block{
+.beforeRemove {
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: transform 1.5s ease, opacity 0.7s ease;
+}
+
+.simple-block {
     border-radius: 10px;
     padding: 10px;
     margin: 0 0 10px 0;
@@ -315,7 +332,7 @@ input:focus {
     border-radius: 10px;
     background: var(--color-red);
     box-shadow: 0 0 15px 0 var(--color-red);
-    color: #ffffff;    
+    color: #ffffff;
 }
 
 .hidden {
@@ -340,6 +357,7 @@ input:focus {
     border-radius: 0.25rem;
     background: transparent;
     padding: 6px;
+    cursor: pointer;
 }
 
 .main-search .addTab img {
@@ -349,10 +367,12 @@ input:focus {
 
 #saveBtn {
     background: var(--color-saveBtn);
+    cursor: pointer;
 }
 
 #delBtn {
     background: var(--color-red);
+    cursor: pointer;
 }
 
 .card-container {
@@ -431,7 +451,7 @@ input:focus {
     font-weight: 700;
     color: var(--color-red);
     text-shadow: #ffffff 1px 0 10px;
-} 
+}
 
 .simple-block canvas {
     width: 100% !important;
@@ -465,7 +485,7 @@ input:focus {
     z-index: 101;
 }
 
-.delAlert-block  .block-column {
+.delAlert-block .block-column {
     align-items: center;
     gap: 35px;
 }
@@ -495,6 +515,7 @@ input:focus {
     font-size: 2.5rem;
     font-weight: 500;
     text-align: center;
+    cursor: pointer;
 }
 
 .closeBtn {
@@ -506,6 +527,7 @@ input:focus {
     background: url('./img/plus.svg') no-repeat center center;
     background-size: cover;
     transform: rotate(45deg);
+    cursor: pointer;
 }
 
 #notification {
@@ -526,3 +548,40 @@ input:focus {
     opacity: 1;
 }
 
+.preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner {
+    border: 8px solid #f3f3f3;
+    /* Light grey */
+    border-top: 8px solid #3498db;
+    /* Blue */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* .hidden {
+    display: none;
+} */
