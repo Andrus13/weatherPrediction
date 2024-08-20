@@ -47,7 +47,7 @@ function checkCity(event) {
 
 // geting IP
 function getIp() {
-    fetch('https://ip-api.com/json/')
+    fetch('http://ip-api.com/json/')
         .then(response => response.json())
         .then(data => {
             currentCity = data.city;
