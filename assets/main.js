@@ -37,7 +37,7 @@ function checkCity(event) {
         autocompleteService.getPlacePredictions(request, function(predictions, status) {
             let city = inputField.value.includes(",") ? inputField.value.split(',')[0] : inputField.value;
             status === google.maps.places.PlacesServiceStatus.OK && predictions.length > 0
-                ? (allertText.classList.add('hidden'), (currentBlock === inputBtn) ? getWearher(city) : addRecordToLocalStorage())
+                ? (allertText.classList.add('hidden'), (currentBlock === inputBtn) ? getWeaher(city) : addRecordToLocalStorage())
                 : allertText.classList.remove('hidden');
         });
     } else {
@@ -96,7 +96,7 @@ function openCards(element) {
 
 
 // query
-function getWearher(city) {
+function getWeaher(city) {
     fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=e795752a371583744e0d50427dac0443&units=metric`)
         .then(response => response.json())
         .then(data => {
