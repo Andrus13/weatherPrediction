@@ -516,7 +516,7 @@ function hidePreloader() {
     if (activeRequests === 0) {
         setTimeout(() => {
             document.getElementById('preloader').classList.add('hidden');
-        }, 5000);
+        }, 2000);
         // document.getElementById('preloader').classList.add('hidden');
     }
 }
