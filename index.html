@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather</title>
+
+    <link rel="stylesheet" type="text/css" href="./assets/main.css">
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQG7cJ0R_-gLP81Z97UVMgbkxRXVVl_3U&libraries=places"></script>
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+            <img src="./assets/img/logo.png" alt="">
+        </header>
+        <section>
+            <div class="nav">
+                <div class="block-text">Головна</div>
+                <ul class="chips">
+                </ul>
+            </div>
+            <div class="main">
+                <div class="main-search">
+                    <div class="block-column">
+                        <div class="block-row">
+                            <div class="block-row">
+                                <div id="inputWrapper" class="inputWrapper">
+                                    <input id="searchTextField" type="text" size="50" autocomplete="on" placeholder="">
+                                    <span class="placeholder">Місто</span>
+                                    <div class="inputWrapper-searchBtn">
+                                        <button id="searchBtn">
+                                            <svg class="_1NtR7n" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" focusable="false">
+                                                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="addTab">
+                                    <img src="./assets/img/plus.svg" alt="">
+                                </div>
+                            </div>
+                            <button id="saveBtn">Зберегти</button>
+                        </div>
+                        <div id="allertText" class="hidden">Оберіть місто</div>
+                    </div>
+                </div>
+            </div>
+            <div class="weather-block weather-block1">
+                <div class="simple-block">
+                    <div class="nav">
+                        <ul class="period">
+                            <li class="active" value="one">День</li>
+                            <li value="five">Неділя</li>
+                        </ul>
+                        <div class="block-row"><div class="nav-trash hidden"></div></div>
+                    </div>
+                    <div class="card-container card-container1"></div>
+                </div>
+                <div class="simple-block">
+                    <canvas id="dailyWeatherChart1" class="dailyWeatherChart"></canvas>
+                    <canvas id="weeklyWeatherChart1" class="weeklyWeatherChar hidden"></canvas>
+                </div>
+            </div>
+        </section>   
+        <div class="delAlert hidden">
+            <div id="modal" class="delAlert-block">
+                <div class="block-column">
+                    <div class="title">
+                        <h1>Внимание</h1>
+                        <span>данные будут удалены*</span>
+                    </div>
+                    <p>Удалить этот блок?</p>
+                    <span class="agreeBtn">Yes</span>
+                    <span class="closeBtn"></span>
+                </div>
+            </div>
+        </div>
+        <div class="success hidden">
+            <div id="modal" class="delAlert-block">
+                <div class="block-column">
+                    <div class="title">
+                        <h1>Success </h1>
+                        <span>данные удалены*</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="notification" class=""></div>
+
+       
+    </div>
+    <script src="./assets/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</body>
+</html>
